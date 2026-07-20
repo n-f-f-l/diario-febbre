@@ -11,7 +11,12 @@
   body{margin:0;padding:16px 14px 40px;background:var(--paper);color:var(--ink);
        font-family:"Helvetica Neue",Arial,system-ui,sans-serif;-webkit-text-size-adjust:100%}
   .wrap{max-width:720px;margin:0 auto}
-  h1{font-size:18px;margin:0 0 4px;font-weight:700}
+  h1{font-size:18px;margin:0;font-weight:700}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .langs{display:flex;gap:4px}
+  .langs button{font-size:11px;padding:4px 8px;background:none;color:var(--muted);
+                border:1px solid var(--line);border-radius:3px;cursor:pointer;font-weight:600}
+  .langs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .stamp{font-size:12px;color:var(--muted);margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   #status{font-size:12px}
   #status.ok{color:#1e7a46}
@@ -41,7 +46,12 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Diario febbre</h1>
+  <div class="top">
+    <h1 id="t-title">Diario febbre</h1>
+    <div class="langs" id="langs">
+      <button data-l="it" class="on">IT</button><button data-l="en">EN</button><button data-l="fr">FR</button><button data-l="de">DE</button>
+    </div>
+  </div>
   <p class="stamp"><span id="stamp">caricamento…</span>
      <button id="refresh">&#8635; Aggiorna</button>
      <span id="status"></span></p>
@@ -75,6 +85,45 @@ const FALLBACK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy0nc4BwK
 const CSV_URL = new URLSearchParams(location.search).get("csv") || FALLBACK_CSV;
 
 const $=id=>document.getElementById(id);
+
+const T={
+ it:{title:"Diario febbre",last:"Ultima misurazione",refresh:"Aggiorna",ro:"sola lettura",
+     wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
+     none:"nessun dato",cfg:"non configurato",
+     h:["Data","Ora","Temp","Farm.","Dall'ultima dose"],
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",loc:"it-IT"},
+ en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
+     wait:"checking…",ok:"updated at ",ko:"update failed, try again",
+     none:"no data",cfg:"not configured",
+     h:["Date","Time","Temp","Med.","Since last dose"],
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",loc:"en-GB"},
+ fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
+     wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
+     none:"aucune donnée",cfg:"non configuré",
+     h:["Date","Heure","Temp","Méd.","Depuis la dernière dose"],
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",loc:"fr-FR"},
+ de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
+     wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen, bitte erneut",
+     none:"keine Daten",cfg:"nicht konfiguriert",
+     h:["Datum","Uhrzeit","Temp","Med.","Seit letzter Dosis"],
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",loc:"de-DE"}
+};
+let L="it";
+try{ const sv=localStorage.getItem("lang"); if(sv&&T[sv]) L=sv; }catch(e){}
+
+function applyLang(){
+  const t=T[L];
+  document.documentElement.lang=L;
+  $("t-title").textContent=t.title;
+  $("refresh").innerHTML="&#8635; "+t.refresh;
+  document.querySelector(".tag").textContent=t.ro;
+  const th=document.querySelectorAll("thead th");
+  t.h.forEach((x,i)=>{ if(th[i]) th[i].textContent=x; });
+  const lg=document.querySelectorAll(".legend span");
+  [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].lastChild.textContent=x; });
+  document.querySelectorAll("#langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
+  render(); stampText();
+}
 let entries=[];
 
 function parseCSV(txt){
@@ -106,8 +155,8 @@ function setStatus(txt,cls){
   const s=$("status"); s.textContent=txt; s.className=cls||"";
 }
 async function load(manual){
-  if(!CSV_URL){ $("setup").style.display=""; $("stamp").textContent="non configurato"; return; }
-  if(manual) setStatus("controllo in corso…","wait");
+  if(!CSV_URL){ $("setup").style.display=""; $("stamp").textContent=T[L].cfg; return; }
+  if(manual) setStatus(T[L].wait,"wait");
   try{
     const r=await fetch(CSV_URL+"&t="+Date.now());
     const rows=parseCSV(await r.text());
@@ -117,14 +166,12 @@ async function load(manual){
       const drug=(c[3]||"").trim().toUpperCase().replace("N","I");
       return {dt,temp:isNaN(temp)?null:temp,drug:(drug==="P"||drug==="I")?drug:""};
     }).filter(Boolean).sort((a,b)=>a.dt-b.dt);
-    $("stamp").textContent = entries.length
-      ? "Ultima misurazione: "+entries[entries.length-1].dt.toLocaleString("it-IT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})
-      : "nessun dato";
+    stampText();
     render();
-    const ora=new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
-    setStatus("aggiornato alle "+ora,"ok");
+    const ora=new Date().toLocaleTimeString(T[L].loc,{hour:"2-digit",minute:"2-digit"});
+    setStatus(T[L].ok+ora,"ok");
   }catch(e){
-    setStatus("aggiornamento non riuscito, riprova","ko");
+    setStatus(T[L].ko,"ko");
   }
 }
 
@@ -137,6 +184,13 @@ function gapFor(i){
     if(prev.P&&prev.I) break;}
   return Object.entries(prev).map(([k,v])=>[v,gapTxt(v)+" ("+k+")"])
     .sort((a,b)=>a[0]-b[0]).map(x=>x[1]).join(" / ")||"/";
+}
+
+function stampText(){
+  const t=T[L];
+  $("stamp").textContent = entries.length
+    ? t.last+": "+entries[entries.length-1].dt.toLocaleString(t.loc,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})
+    : t.none;
 }
 
 function chart(){
@@ -198,6 +252,11 @@ $("refresh").onclick=async()=>{
   await load(true);
   b.disabled=false; b.innerHTML="&#8635; Aggiorna";
 };
+document.querySelectorAll("#langs button").forEach(b=>b.onclick=()=>{
+  L=b.dataset.l; try{ localStorage.setItem("lang",L); }catch(e){}
+  applyLang();
+});
+applyLang();
 load();
 setInterval(()=>load(false),60000);
 </script>
