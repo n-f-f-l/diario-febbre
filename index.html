@@ -6,7 +6,7 @@
 <title>Diario febbre</title>
 <style>
   :root{--ink:#15191c;--paper:#fbfaf7;--line:#d7dbde;--muted:#6b757c;
-        --para:#1f4e79;--ibu:#0f6b56;--hot:#b03a2e}
+        --para:#2f6fd0;--ibu:#e08a1e;--hot:#b03a2e}
   *{box-sizing:border-box}
   body{margin:0;padding:16px 14px 40px;background:var(--paper);color:var(--ink);
        font-family:"Helvetica Neue",Arial,system-ui,sans-serif;-webkit-text-size-adjust:100%}
@@ -30,6 +30,10 @@
   td.n{font-variant-numeric:tabular-nums}
   .P{color:var(--para);font-weight:700}.I{color:var(--ibu);font-weight:700}
   .hi{color:var(--hot);font-weight:700}.lo{color:#1e7a46;font-weight:600}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 4px 2px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+  .sw.band{background:#eef1f3;border:1px solid var(--line)}
   .hint{font-size:12px;color:var(--muted);line-height:1.5}
   .err{color:var(--hot);font-size:13px;line-height:1.5}
   code{background:#eef1f3;padding:1px 5px;border-radius:2px;font-size:12px;word-break:break-all}
@@ -50,7 +54,14 @@
     <p class="hint">Quello è il link da condividere: chi lo apre vede i dati aggiornati, senza account.</p>
   </div>
 
-  <div class="card scroll"><svg id="chart" viewBox="0 0 700 320"></svg></div>
+  <div class="card scroll">
+    <svg id="chart" viewBox="0 0 700 320"></svg>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--para)"></i>P &middot; paracetamolo</span>
+      <span><i class="sw" style="background:var(--ibu)"></i>I &middot; ibuprofene 2%</span>
+      <span><i class="sw band"></i>zona &ge; 38 &deg;C</span>
+    </div>
+  </div>
   <div class="card scroll">
     <table><thead><tr><th>Data</th><th>Ora</th><th>Temp</th><th>Farm.</th><th>Dall'ultima dose</th></tr></thead>
     <tbody id="tb"></tbody></table>
@@ -154,7 +165,7 @@ function chart(){
   }
   const ya=m.t+ih+18;
   entries.filter(e=>e.drug).forEach(e=>{
-    const x=X(+e.dt),c=e.drug==="P"?"#1f4e79":"#0f6b56";
+    const x=X(+e.dt),c=e.drug==="P"?"#2f6fd0":"#e08a1e";
     svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:c,"stroke-width":.9,opacity:.22}));
     svg.appendChild(el("path",{d:`M ${x-5} ${ya} L ${x+5} ${ya} L ${x} ${ya+8} Z`,fill:c}));
     tx(e.drug,{x:x,y:ya+20,"text-anchor":"middle","font-size":10,fill:c,"font-weight":"700"});
@@ -167,7 +178,7 @@ function chart(){
 }
 
 function render(){
-  $("tb").innerHTML=entries.map((e,i)=>{
+  $("tb").innerHTML=entries.map((e,i)=>({e,i})).reverse().map(({e,i})=>{
     const dd=("0"+e.dt.getDate()).slice(-2)+"/"+("0"+(e.dt.getMonth()+1)).slice(-2);
     const hh=("0"+e.dt.getHours()).slice(-2)+":"+("0"+e.dt.getMinutes()).slice(-2);
     const cls=e.temp>=39.5?"hi":(e.temp&&e.temp<37.5?"lo":"");
