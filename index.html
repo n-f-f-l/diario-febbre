@@ -13,6 +13,10 @@
   .wrap{max-width:720px;margin:0 auto}
   h1{font-size:18px;margin:0 0 4px;font-weight:700}
   .stamp{font-size:12px;color:var(--muted);margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #status{font-size:12px}
+  #status.ok{color:#1e7a46}
+  #status.ko{color:var(--hot)}
+  #status.wait{color:var(--muted)}
   #refresh{font-size:12px;padding:5px 11px;background:none;color:var(--ink);border:1px solid var(--line);
            border-radius:99px;font-weight:600;cursor:pointer}
   .tag{display:inline-block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
@@ -35,7 +39,8 @@
 <div class="wrap">
   <h1>Diario febbre</h1>
   <p class="stamp"><span id="stamp">caricamento…</span>
-     <button id="refresh">&#8635; Aggiorna</button></p>
+     <button id="refresh">&#8635; Aggiorna</button>
+     <span id="status"></span></p>
   <span class="tag">sola lettura</span>
 
   <div id="setup" class="card" style="display:none">
@@ -87,8 +92,12 @@ function toDate(d,t){
   return new Date(y,m-1,day,+tt[1],+tt[2]);
 }
 
-async function load(){
+function setStatus(txt,cls){
+  const s=$("status"); s.textContent=txt; s.className=cls||"";
+}
+async function load(manual){
   if(!CSV_URL){ $("setup").style.display=""; $("stamp").textContent="non configurato"; return; }
+  if(manual) setStatus("controllo in corso…","wait");
   try{
     const r=await fetch(CSV_URL+"&t="+Date.now());
     const rows=parseCSV(await r.text());
@@ -102,7 +111,11 @@ async function load(){
       ? "Ultima misurazione: "+entries[entries.length-1].dt.toLocaleString("it-IT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})
       : "nessun dato";
     render();
-  }catch(e){ $("stamp").textContent="errore di caricamento"; }
+    const ora=new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
+    setStatus("aggiornato alle "+ora,"ok");
+  }catch(e){
+    setStatus("aggiornamento non riuscito, riprova","ko");
+  }
 }
 
 const gapTxt=d=>{const m=Math.round(d/60000);return Math.floor(m/60)+"h"+String(m%60).padStart(2,"0")};
@@ -165,9 +178,13 @@ function render(){
   chart();
 }
 
-$("refresh").onclick=load;
+$("refresh").onclick=async()=>{
+  const b=$("refresh"); b.disabled=true; b.textContent="…";
+  await load(true);
+  b.disabled=false; b.innerHTML="&#8635; Aggiorna";
+};
 load();
-setInterval(load,60000);
+setInterval(()=>load(false),60000);
 </script>
 </body>
 </html>
