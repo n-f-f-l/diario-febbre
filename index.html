@@ -172,7 +172,12 @@ function chart(){
   });
   svg.appendChild(el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
     fill:"none",stroke:"#111","stroke-width":1.6,"stroke-linejoin":"round"}));
-  pts.forEach(p=>svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:2.6,fill:"#111"})));
+  pts.forEach(p=>{
+    const c = p.drug==="P" ? "#2f6fd0" : (p.drug==="I" ? "#e08a1e" : "#111");
+    const r = p.drug ? 4.6 : 2.6;
+    svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?"#fff":c,
+      stroke:c,"stroke-width":p.drug?2.4:0}));
+  });
   const L=pts[pts.length-1];
   tx(L.temp.toFixed(1),{x:X(+L.dt)-6,y:Y(L.temp)-8,"text-anchor":"end","font-size":11,"font-weight":"700",fill:"#111"});
 }
