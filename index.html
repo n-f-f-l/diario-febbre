@@ -14,12 +14,12 @@
 <style>
   :root{
     --ink:#15191c; --paper:#fbfaf7; --card:#ffffff; --line:#d7dbde; --muted:#6b757c;
-    --para:#2f6fd0; --ibu:#e08a1e; --hot:#b03a2e; --good:#1e7a46;
+    --para:#2f6fd0; --ibu:#e08a1e; --hot:#b03a2e; --good:#1e7a46; --warn:#c98a1a;
     --band:#eef1f3; --grid:#e6eaec; --grid2:#9aa4ab;
   }
   html[data-theme="dark"]{
     --ink:#e8ecef; --paper:#12161a; --card:#1a1f24; --line:#2c343b; --muted:#94a1aa;
-    --para:#6fa8ff; --ibu:#f0a94a; --hot:#ff8a7a; --good:#5fcf94;
+    --para:#6fa8ff; --ibu:#f0a94a; --hot:#ff8a7a; --good:#5fcf94; --warn:#e0ab52;
     --band:#212a31; --grid:#252d34; --grid2:#4a565f;
   }
   *{box-sizing:border-box}
@@ -65,7 +65,7 @@
   th.act{color:var(--ink)} th.act .ar{opacity:1}
   td.n{font-variant-numeric:tabular-nums}
   .P{color:var(--para);font-weight:700} .I{color:var(--ibu);font-weight:700}
-  .hi{color:var(--hot);font-weight:700} .lo{color:var(--good);font-weight:600}
+  .hi{color:var(--hot);font-weight:700} .lo{color:var(--good);font-weight:600} .mid{color:var(--warn);font-weight:600}
   .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 4px 2px;font-size:12px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:11px;height:11px;border-radius:2px;display:inline-block}
@@ -88,6 +88,8 @@
      <button id="refresh">&#8635; Aggiorna</button>
      <span id="status"></span>
      <button id="theme" title="tema">◐</button></p>
+  <label class="notif"><input type="checkbox" id="notifToggle"><span id="t-notif">Avvisami sul telefono per ogni nuova misurazione</span></label>
+  <p class="hint" id="notifHint" style="display:none"></p>
 
   <div id="setup" class="card" style="display:none">
     <p class="err"><b>Manca l'indirizzo del foglio.</b></p>
@@ -113,6 +115,7 @@
   <div class="card">
     <div class="legend" id="t-legend" style="margin:0 0 10px">
       <span><i class="sw" style="background:var(--hot)"></i><span id="t-leg-hi">&ge; 39.5 &deg;C</span></span>
+      <span><i class="sw" style="background:var(--warn)"></i><span id="t-leg-mid">37.5&ndash;39.4 &deg;C</span></span>
       <span><i class="sw" style="background:var(--good)"></i><span id="t-leg-lo">&lt; 37.5 &deg;C</span></span>
     </div>
     <div class="tbox">
@@ -138,28 +141,28 @@ const T={
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
      none:"nessun dato",cfg:"non configurato",tap:"Tocca un punto per vedere i dettagli",
      h:{dt:"Data",time:"Ora",temp:"Temp",drug:"Farm.",gap:"Dall'ultima dose"},
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",leghi:"febbre alta",leglo:"sfebbrata",
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",leghi:"febbre alta",legmid:"febbre",leglo:"sfebbrata",notif:"Avvisami sul telefono per ogni nuova misurazione",notifDenied:"Notifiche bloccate dal telefono: abilitale nelle impostazioni del browser.",notifOnlyOpen:"Funziona solo mentre questa pagina resta aperta.",
      ago:m=>"Rilevata "+hum(m,"it")+" fa",stale:m=>"Nessuna misurazione da "+hum(m,"it"),
      loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
      none:"no data",cfg:"not configured",tap:"Tap a point to see details",
      h:{dt:"Date",time:"Time",temp:"Temp",drug:"Med.",gap:"Since last dose"},
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",leghi:"high fever",leglo:"fever-free",
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",leghi:"high fever",legmid:"fever",leglo:"fever-free",notif:"Notify me on new readings",notifDenied:"Notifications blocked: enable them in your browser settings.",notifOnlyOpen:"Only works while this page stays open.",
      ago:m=>"Taken "+hum(m,"en")+" ago",stale:m=>"No reading for "+hum(m,"en"),
      loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
      none:"aucune donnée",cfg:"non configuré",tap:"Touchez un point pour voir les détails",
      h:{dt:"Date",time:"Heure",temp:"Temp",drug:"Méd.",gap:"Depuis la dernière dose"},
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",leghi:"forte fièvre",leglo:"apyrexie",
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",leghi:"forte fièvre",legmid:"fièvre",leglo:"apyrexie",notif:"M\u2019avertir à chaque nouvelle mesure",notifDenied:"Notifications bloquées : activez-les dans les réglages du navigateur.",notifOnlyOpen:"Fonctionne uniquement si cette page reste ouverte.",
      ago:m=>"Relevée il y a "+hum(m,"fr"),stale:m=>"Aucune mesure depuis "+hum(m,"fr"),
      loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
      wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen",
      none:"keine Daten",cfg:"nicht konfiguriert",tap:"Tippen Sie auf einen Punkt für Details",
      h:{dt:"Datum",time:"Uhrzeit",temp:"Temp",drug:"Med.",gap:"Seit letzter Dosis"},
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",leghi:"hohes Fieber",leglo:"fieberfrei",
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",leghi:"hohes Fieber",legmid:"Fieber",leglo:"fieberfrei",notif:"Bei neuer Messung benachrichtigen",notifDenied:"Benachrichtigungen blockiert: bitte in den Browsereinstellungen aktivieren.",notifOnlyOpen:"Funktioniert nur, solange diese Seite geöffnet bleibt.",
      ago:m=>"Gemessen vor "+hum(m,"de"),stale:m=>"Keine Messung seit "+hum(m,"de"),
      loc:"de-DE"}
 };
@@ -219,6 +222,15 @@ function toDate(d,t){
 }
 function setStatus(txt,cls){ const s=$("status"); s.textContent=txt||""; s.className=cls||""; }
 
+let lastSeenKey=null;
+function notifyNew(newOnes){
+  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  newOnes.forEach(e=>{
+    const med = e.drug==="P" ? T[L].lp : (e.drug==="I" ? T[L].li : "");
+    const body = e.temp ? e.temp.toFixed(1)+" °C"+(med?" · "+med:"") : med;
+    try{ new Notification(T[L].title, {body, tag:"febbre-"+ +e.dt}); }catch(err){}
+  });
+}
 async function load(manual){
   if(!CSV_URL){ $("setup").style.display=""; $("stamp").textContent=T[L].cfg; return; }
   if(manual) setStatus(T[L].wait,"wait");
@@ -231,6 +243,11 @@ async function load(manual){
       let drug=(c[3]||"").trim().toUpperCase(); if(drug==="N") drug="I";
       return {dt,temp:isNaN(temp)?null:temp,drug:(drug==="P"||drug==="I")?drug:""};
     }).filter(Boolean).sort((a,b)=>a.dt-b.dt);
+    if(lastSeenKey!==null && $("notifToggle").checked){
+      const fresh=entries.filter(e=>+e.dt>lastSeenKey);
+      if(fresh.length) notifyNew(fresh);
+    }
+    if(entries.length) lastSeenKey=+entries[entries.length-1].dt;
     render();
     const t=T[L], ora=new Date().toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"});
     setStatus(t.ok+ora,"ok");
@@ -375,7 +392,7 @@ function table(){
   $("tb").innerHTML=rows.map(({e,i})=>{
     const dd=("0"+e.dt.getDate()).slice(-2)+"/"+("0"+(e.dt.getMonth()+1)).slice(-2);
     const hh=("0"+e.dt.getHours()).slice(-2)+":"+("0"+e.dt.getMinutes()).slice(-2);
-    const cls=e.temp>=39.5?"hi":(e.temp&&e.temp<37.5?"lo":"");
+    const cls=!e.temp?"":e.temp>=39.5?"hi":(e.temp<37.5?"lo":"mid");
     return `<tr><td class="n">${dd}</td><td class="n">${hh}</td>
       <td class="n ${cls}">${e.temp?e.temp.toFixed(1):""}</td>
       <td class="${e.drug}">${e.drug}</td><td class="n">${gapFor(i)}</td></tr>`;
@@ -394,10 +411,13 @@ function applyLang(){
   $("t-title").textContent=t.title;
   $("refresh").innerHTML="&#8635; "+t.refresh;
   $("t-tap").textContent=t.tap;
+  $("t-notif").textContent=t.notif;
+  if($("notifToggle").checked) $("notifHint").textContent=t.notifOnlyOpen;
   $("rall").textContent=t.all;
   const lg=document.querySelectorAll("#chartWrap .legend span span");
   [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
   $("t-leg-hi").textContent="\u2265 39.5 \u00b0C \u00b7 "+t.leghi;
+  $("t-leg-mid").textContent="37.5\u201339.4 \u00b0C \u00b7 "+t.legmid;
   $("t-leg-lo").textContent="< 37.5 \u00b0C \u00b7 "+t.leglo;
   document.querySelectorAll(".tools button[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
   render(false);
@@ -438,6 +458,32 @@ try{
   link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
   document.head.appendChild(link);
 }catch(e){}
+
+const nt=$("notifToggle");
+nt.checked = ST("notif")==="1" && "Notification" in window && Notification.permission==="granted";
+function refreshNotifHint(){
+  const h=$("notifHint");
+  if(!nt.checked){ h.style.display="none"; return; }
+  h.style.display="";
+  h.textContent = Notification.permission==="denied" ? T[L].notifDenied : T[L].notifOnlyOpen;
+}
+nt.onchange=async()=>{
+  if(nt.checked){
+    if(!("Notification" in window)){ nt.checked=false; return; }
+    if(Notification.permission==="default"){
+      const perm=await Notification.requestPermission();
+      if(perm!=="granted"){ nt.checked=false; ST("notif","0"); refreshNotifHint(); return; }
+    } else if(Notification.permission==="denied"){
+      nt.checked=false; ST("notif","0"); refreshNotifHint(); return;
+    }
+    ST("notif","1");
+    if(entries.length) lastSeenKey=+entries[entries.length-1].dt;
+  } else {
+    ST("notif","0");
+  }
+  refreshNotifHint();
+};
+refreshNotifHint();
 
 applyLang();
 load();
