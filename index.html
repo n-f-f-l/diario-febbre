@@ -2,141 +2,201 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Diario febbre</title>
+<meta name="theme-color" content="#fbfaf7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Febbre">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%2315191c'/%3E%3Cpath d='M28 120 L58 92 L78 128 L104 54 L128 104 L152 74' fill='none' stroke='%23fff' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2315191c'/%3E%3Cpath d='M10 43 L21 33 L28 46 L37 19 L46 37 L54 26' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-  :root{--ink:#15191c;--paper:#fbfaf7;--line:#d7dbde;--muted:#6b757c;
-        --para:#2f6fd0;--ibu:#e08a1e;--hot:#b03a2e}
+  :root{
+    --ink:#15191c; --paper:#fbfaf7; --card:#ffffff; --line:#d7dbde; --muted:#6b757c;
+    --para:#2f6fd0; --ibu:#e08a1e; --hot:#b03a2e; --good:#1e7a46;
+    --band:#eef1f3; --grid:#e6eaec; --grid2:#9aa4ab;
+  }
+  html[data-theme="dark"]{
+    --ink:#e8ecef; --paper:#12161a; --card:#1a1f24; --line:#2c343b; --muted:#94a1aa;
+    --para:#6fa8ff; --ibu:#f0a94a; --hot:#ff8a7a; --good:#5fcf94;
+    --band:#212a31; --grid:#252d34; --grid2:#4a565f;
+  }
   *{box-sizing:border-box}
   body{margin:0;padding:16px 14px 40px;background:var(--paper);color:var(--ink);
-       font-family:"Helvetica Neue",Arial,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+       font-family:"Helvetica Neue",Arial,system-ui,sans-serif;-webkit-text-size-adjust:100%;
+       transition:background .2s,color .2s}
   .wrap{max-width:720px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
   h1{font-size:18px;margin:0;font-weight:700}
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
-  .langs{display:flex;gap:4px}
-  .langs button{font-size:11px;padding:4px 8px;background:none;color:var(--muted);
+  .tools{display:flex;gap:4px;align-items:center}
+  .tools button{font-size:11px;padding:4px 8px;background:none;color:var(--muted);
                 border:1px solid var(--line);border-radius:3px;cursor:pointer;font-weight:600}
-  .langs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .stamp{font-size:12px;color:var(--muted);margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  #status{font-size:12px}
-  #status.ok{color:#1e7a46}
-  #status.ko{color:var(--hot)}
-  #status.wait{color:var(--muted)}
+  .tools button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  #theme{font-size:13px;padding:3px 8px}
+  .stamp{font-size:12px;color:var(--muted);margin:0 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ago{font-size:13px;margin:0 0 10px;color:var(--muted)}
+  .ago b{color:var(--ink)}
+  .ago.stale{color:var(--hot)}
+  .ago.stale b{color:var(--hot)}
   #refresh{font-size:12px;padding:5px 11px;background:none;color:var(--ink);border:1px solid var(--line);
            border-radius:99px;font-weight:600;cursor:pointer}
+  #status{font-size:12px}
+  #status.ok{color:var(--good)} #status.ko{color:var(--hot)} #status.wait{color:var(--muted)}
   .tag{display:inline-block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
        border:1px solid var(--line);border-radius:2px;padding:2px 7px;margin-bottom:12px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:3px;padding:12px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:12px;margin-bottom:14px}
+  #chartWrap{position:relative}
+  .barr{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 8px;flex-wrap:wrap}
+  .tap{margin:0;font-size:11.5px;color:var(--muted)}
+  .range{display:flex;gap:4px}
+  .range button{font-size:11px;padding:4px 9px;background:none;color:var(--muted);
+                border:1px solid var(--line);border-radius:3px;cursor:pointer;font-weight:600}
+  .range button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  #tip{position:absolute;display:none;z-index:5;background:var(--ink);color:var(--paper);
+       border-radius:4px;padding:8px 10px;font-size:12px;line-height:1.45;
+       box-shadow:0 4px 14px rgba(0,0,0,.22);pointer-events:none;white-space:nowrap}
+  #tip b{font-size:14px} #tip .d{opacity:.75}
+  #chart circle.pt{cursor:pointer}
   svg{display:block;width:100%;height:auto}
   .scroll{overflow-x:auto}
-  table{border-collapse:collapse;width:100%;font-size:13px}
-  th,td{border-bottom:1px solid #e8ebed;padding:6px;text-align:left}
-  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .tbox{max-height:60vh;overflow:auto}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+  th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  th{position:sticky;top:0;background:var(--card);z-index:2;font-size:11px;text-transform:uppercase;
+     letter-spacing:.06em;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+  th .ar{opacity:.35;margin-left:3px}
+  th.act{color:var(--ink)} th.act .ar{opacity:1}
   td.n{font-variant-numeric:tabular-nums}
-  .P{color:var(--para);font-weight:700}.I{color:var(--ibu);font-weight:700}
-  .hi{color:var(--hot);font-weight:700}.lo{color:#1e7a46;font-weight:600}
-  #chartWrap{position:relative}
-  .tap{margin:0 2px 8px;font-size:11.5px;color:var(--muted)}
-  #tip{position:absolute;display:none;z-index:5;background:var(--ink);color:#fff;
-       border-radius:4px;padding:8px 10px;font-size:12px;line-height:1.45;
-       box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap}
-  #tip b{font-size:14px}
-  #tip .d{opacity:.75}
-  #chart circle.pt{cursor:pointer}
+  .P{color:var(--para);font-weight:700} .I{color:var(--ibu);font-weight:700}
+  .hi{color:var(--hot);font-weight:700} .lo{color:var(--good);font-weight:600}
   .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 4px 2px;font-size:12px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:11px;height:11px;border-radius:2px;display:inline-block}
-  .sw.band{background:#eef1f3;border:1px solid var(--line)}
+  .sw.band{background:var(--band);border:1px solid var(--line)}
   .hint{font-size:12px;color:var(--muted);line-height:1.5}
   .err{color:var(--hot);font-size:13px;line-height:1.5}
-  code{background:#eef1f3;padding:1px 5px;border-radius:2px;font-size:12px;word-break:break-all}
+  code{background:var(--band);padding:1px 5px;border-radius:2px;font-size:12px;word-break:break-all}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <h1 id="t-title">Diario febbre</h1>
-    <div class="langs" id="langs">
+    <div class="tools">
       <button data-l="it" class="on">IT</button><button data-l="en">EN</button><button data-l="fr">FR</button><button data-l="de">DE</button>
+      <button id="theme" title="tema">◐</button>
     </div>
   </div>
-  <p class="stamp"><span id="stamp">caricamento…</span>
+
+  <p class="stamp"><span id="stamp">…</span>
      <button id="refresh">&#8635; Aggiorna</button>
      <span id="status"></span></p>
-  <span class="tag">sola lettura</span>
+  <p class="ago" id="ago"></p>
+  <span class="tag" id="t-ro">sola lettura</span>
 
   <div id="setup" class="card" style="display:none">
     <p class="err"><b>Manca l'indirizzo del foglio.</b></p>
-    <p class="hint">Nel foglio Google: <b>File &rsaquo; Condividi &rsaquo; Pubblica sul web</b>, foglio <b>Dati</b>, formato <b>CSV</b>, Pubblica. Copia il link che finisce con <code>output=csv</code>, poi aprilo così:</p>
-    <p class="hint"><code>indirizzo-di-questa-pagina/?csv=LINK_CSV</code></p>
-    <p class="hint">Quello è il link da condividere: chi lo apre vede i dati aggiornati, senza account.</p>
+    <p class="hint">Nel foglio Google: <b>File &rsaquo; Condividi &rsaquo; Pubblica sul web</b>, foglio <b>Inserisci</b>, formato <b>CSV</b>.</p>
   </div>
 
   <div class="card scroll" id="chartWrap">
     <div id="tip"></div>
-    <p class="tap" id="t-tap">Tocca un punto per vedere i dettagli</p>
+    <div class="barr">
+      <p class="tap" id="t-tap">Tocca un punto per vedere i dettagli</p>
+      <div class="range">
+        <button data-r="48" id="r48">48h</button><button data-r="0" id="rall" class="on">tutto</button>
+      </div>
+    </div>
     <svg id="chart" viewBox="0 0 700 320"></svg>
     <div class="legend">
-      <span><i class="sw" style="background:var(--para)"></i>P &middot; paracetamolo</span>
-      <span><i class="sw" style="background:var(--ibu)"></i>I &middot; ibuprofene 2%</span>
-      <span><i class="sw band"></i>zona &ge; 38 &deg;C</span>
+      <span><i class="sw" style="background:var(--para)"></i><span>P &middot; paracetamolo</span></span>
+      <span><i class="sw" style="background:var(--ibu)"></i><span>I &middot; ibuprofene 2%</span></span>
+      <span><i class="sw band"></i><span>zona &ge; 38 &deg;C</span></span>
     </div>
   </div>
-  <div class="card scroll">
-    <table><thead><tr><th>Data</th><th>Ora</th><th>Temp</th><th>Farm.</th><th>Dall'ultima dose</th></tr></thead>
-    <tbody id="tb"></tbody></table>
+
+  <div class="card">
+    <div class="tbox">
+      <table><thead><tr>
+        <th data-s="dt" class="act">Data<span class="ar">↓</span></th>
+        <th data-s="time">Ora<span class="ar"></span></th>
+        <th data-s="temp">Temp<span class="ar"></span></th>
+        <th data-s="drug">Farm.<span class="ar"></span></th>
+        <th data-s="gap">Dall'ultima dose<span class="ar"></span></th>
+      </tr></thead><tbody id="tb"></tbody></table>
+    </div>
   </div>
 </div>
 
 <script>
-// Il link CSV si passa nell'indirizzo:  ...?csv=INDIRIZZO_CSV
-// In alternativa incollalo qui sotto tra le virgolette.
 const FALLBACK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSy0nc4BwKBgLAinQHsLC73kfSZYC_SZNRX-KFbuXr-lKdi9cySktfnpPQDlA6Zj2kHNLi-3a2T6Rg3/pub?gid=1539684389&single=true&output=csv";
 const CSV_URL = new URLSearchParams(location.search).get("csv") || FALLBACK_CSV;
-
 const $=id=>document.getElementById(id);
+const ST=(k,v)=>{ try{ return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v);}catch(e){return null;} };
 
 const T={
  it:{title:"Diario febbre",last:"Ultima misurazione",refresh:"Aggiorna",ro:"sola lettura",
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
-     none:"nessun dato",cfg:"non configurato",
-     h:["Data","Ora","Temp","Farm.","Dall'ultima dose"],
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",tap:"Tocca un punto per vedere i dettagli",loc:"it-IT"},
+     none:"nessun dato",cfg:"non configurato",tap:"Tocca un punto per vedere i dettagli",
+     h:{dt:"Data",time:"Ora",temp:"Temp",drug:"Farm.",gap:"Dall'ultima dose"},
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",
+     ago:m=>"Rilevata "+hum(m,"it")+" fa",stale:m=>"Nessuna misurazione da "+hum(m,"it"),
+     loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
-     none:"no data",cfg:"not configured",
-     h:["Date","Time","Temp","Med.","Since last dose"],
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",tap:"Tap a point to see details",loc:"en-GB"},
+     none:"no data",cfg:"not configured",tap:"Tap a point to see details",
+     h:{dt:"Date",time:"Time",temp:"Temp",drug:"Med.",gap:"Since last dose"},
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",
+     ago:m=>"Taken "+hum(m,"en")+" ago",stale:m=>"No reading for "+hum(m,"en"),
+     loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
-     none:"aucune donnée",cfg:"non configuré",
-     h:["Date","Heure","Temp","Méd.","Depuis la dernière dose"],
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",tap:"Touchez un point pour voir les détails",loc:"fr-FR"},
+     none:"aucune donnée",cfg:"non configuré",tap:"Touchez un point pour voir les détails",
+     h:{dt:"Date",time:"Heure",temp:"Temp",drug:"Méd.",gap:"Depuis la dernière dose"},
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",
+     ago:m=>"Relevée il y a "+hum(m,"fr"),stale:m=>"Aucune mesure depuis "+hum(m,"fr"),
+     loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
-     wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen, bitte erneut",
-     none:"keine Daten",cfg:"nicht konfiguriert",
-     h:["Datum","Uhrzeit","Temp","Med.","Seit letzter Dosis"],
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",tap:"Tippen Sie auf einen Punkt für Details",loc:"de-DE"}
+     wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen",
+     none:"keine Daten",cfg:"nicht konfiguriert",tap:"Tippen Sie auf einen Punkt für Details",
+     h:{dt:"Datum",time:"Uhrzeit",temp:"Temp",drug:"Med.",gap:"Seit letzter Dosis"},
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",
+     ago:m=>"Gemessen vor "+hum(m,"de"),stale:m=>"Keine Messung seit "+hum(m,"de"),
+     loc:"de-DE"}
 };
-let L="it";
-try{ const sv=localStorage.getItem("lang"); if(sv&&T[sv]) L=sv; }catch(e){}
-
-function applyLang(){
-  const t=T[L];
-  document.documentElement.lang=L;
-  $("t-title").textContent=t.title;
-  $("refresh").innerHTML="&#8635; "+t.refresh;
-  $("t-tap").textContent=t.tap;
-  document.querySelector(".tag").textContent=t.ro;
-  const th=document.querySelectorAll("thead th");
-  t.h.forEach((x,i)=>{ if(th[i]) th[i].textContent=x; });
-  const lg=document.querySelectorAll(".legend span");
-  [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].lastChild.textContent=x; });
-  document.querySelectorAll("#langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
-  render(); stampText();
+const U={it:["min","h","g"],en:["min","h","d"],fr:["min","h","j"],de:["Min","Std","T"]};
+function hum(min,l){
+  const u=U[l];
+  if(min<60) return Math.max(1,Math.round(min))+" "+u[0];
+  if(min<60*24){ const h=Math.floor(min/60), m=Math.round(min%60);
+    return h+u[1]+(m?String(m).padStart(2,"0"):""); }
+  const d=Math.floor(min/1440), h=Math.round((min%1440)/60);
+  return d+u[2]+(h?" "+h+u[1]:"");
 }
+
+let L=ST("lang")||"it"; if(!T[L]) L="it";
+let RANGE=parseInt(ST("range")||"0",10);
+let SORT={k:"dt",dir:-1};
 let entries=[];
 
+// tema
+function setTheme(mode){
+  document.documentElement.dataset.theme = mode==="auto"
+    ? (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light") : mode;
+  document.querySelector('meta[name=theme-color]').content =
+    document.documentElement.dataset.theme==="dark" ? "#12161a" : "#fbfaf7";
+  $("theme").textContent = mode==="auto" ? "◐" : (mode==="dark" ? "☾" : "☀");
+}
+let THEME=ST("theme")||"auto";
+setTheme(THEME);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ if(THEME==="auto") setTheme("auto"); });
+$("theme").onclick=()=>{
+  THEME = THEME==="auto" ? "light" : (THEME==="light" ? "dark" : "auto");
+  ST("theme",THEME); setTheme(THEME);
+};
+
+// dati
 function parseCSV(txt){
   const rows=[]; let row=[],cell="",q=false;
   for(let i=0;i<txt.length;i++){
@@ -150,21 +210,18 @@ function parseCSV(txt){
   if(cell||row.length){ row.push(cell); rows.push(row); }
   return rows;
 }
-
 function toDate(d,t){
   d=(d||"").trim(); t=(t||"").trim();
-  let y,m,day;
-  let mm=d.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-  if(mm){ day=+mm[1]; m=+mm[2]; y=+mm[3]; if(y<100)y+=2000; }
+  let y,m,day,mm;
+  if((mm=d.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/))){ day=+mm[1]; m=+mm[2]; y=+mm[3]; if(y<100)y+=2000; }
   else if((mm=d.match(/^(\d{1,2})[\/\-](\d{1,2})$/))){ day=+mm[1]; m=+mm[2]; y=new Date().getFullYear(); }
-  else { mm=d.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if(!mm) return null; y=+mm[1]; m=+mm[2]; day=+mm[3]; }
+  else if((mm=d.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))){ y=+mm[1]; m=+mm[2]; day=+mm[3]; }
+  else return null;
   const tt=t.match(/^(\d{1,2}):(\d{2})/); if(!tt) return null;
   return new Date(y,m-1,day,+tt[1],+tt[2]);
 }
+function setStatus(txt,cls){ const s=$("status"); s.textContent=txt||""; s.className=cls||""; }
 
-function setStatus(txt,cls){
-  const s=$("status"); s.textContent=txt; s.className=cls||"";
-}
 async function load(manual){
   if(!CSV_URL){ $("setup").style.display=""; $("stamp").textContent=T[L].cfg; return; }
   if(manual) setStatus(T[L].wait,"wait");
@@ -174,21 +231,18 @@ async function load(manual){
     entries=rows.slice(1).map(c=>{
       const dt=toDate(c[0],c[1]); if(!dt) return null;
       const temp=parseFloat(String(c[2]||"").replace(",","."));
-      const drug=(c[3]||"").trim().toUpperCase().replace("N","I");
+      let drug=(c[3]||"").trim().toUpperCase(); if(drug==="N") drug="I";
       return {dt,temp:isNaN(temp)?null:temp,drug:(drug==="P"||drug==="I")?drug:""};
     }).filter(Boolean).sort((a,b)=>a.dt-b.dt);
-    stampText();
     render();
-    const ora=new Date().toLocaleTimeString(T[L].loc,{hour:"2-digit",minute:"2-digit"});
-    setStatus(T[L].ok+ora,"ok");
-  }catch(e){
-    setStatus(T[L].ko,"ko");
-  }
+    const t=T[L], ora=new Date().toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"});
+    setStatus(t.ok+ora,"ok");
+  }catch(e){ setStatus(T[L].ko,"ko"); }
 }
 
 const gapTxt=d=>{const m=Math.round(d/60000);return Math.floor(m/60)+"h"+String(m%60).padStart(2,"0")};
 function gapFor(i){
-  const e=entries[i]; if(!e.drug) return "";
+  const e=entries[i]; if(!e||!e.drug) return "";
   const prev={};
   for(let j=i-1;j>=0;j--){const p=entries[j];
     if(p.drug&&!prev[p.drug]) prev[p.drug]=e.dt-p.dt;
@@ -197,68 +251,31 @@ function gapFor(i){
     .sort((a,b)=>a[0]-b[0]).map(x=>x[1]).join(" / ")||"/";
 }
 
-function stampText(){
-  const t=T[L];
-  $("stamp").textContent = entries.length
-    ? t.last+": "+entries[entries.length-1].dt.toLocaleString(t.loc,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})
-    : t.none;
+function inRange(){
+  if(!RANGE) return entries;
+  const lim=Date.now()-RANGE*3600e3;
+  return entries.filter(e=>+e.dt>=lim);
 }
 
-function chart(){
-  const svg=$("chart"); svg.innerHTML="";
-  const pts=entries.filter(e=>e.temp);
-  if(pts.length<2) return;
-  const W=700,H=320,m={t:14,r:12,b:60,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
-  const X=t=>m.l+((t-t0)/((t1-t0)||1))*iw, Y=v=>m.t+(1-(v-35)/6)*ih;
-  const NS="http://www.w3.org/2000/svg";
-  const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
-  const tx=(s,a)=>{const e=el("text",a);e.textContent=s;svg.appendChild(e)};
-  svg.appendChild(el("rect",{x:m.l,y:Y(41),width:iw,height:Y(38)-Y(41),fill:"#eef1f3"}));
-  for(let v=35;v<=41;v++){
-    svg.appendChild(el("line",{x1:m.l,y1:Y(v),x2:m.l+iw,y2:Y(v),stroke:v===38?"#9aa4ab":"#e6eaec",
-      "stroke-width":v===38?1.3:1,"stroke-dasharray":v===38?"5 3":""}));
-    tx(v,{x:m.l-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:"#6b757c"});
-  }
-  svg.appendChild(el("line",{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:"#15191c","stroke-width":1.2}));
-  let d=new Date(t0); d.setHours(24,0,0,0);
-  for(;+d<t1;d.setDate(d.getDate()+1)){
-    const x=X(+d);
-    svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:"#15191c","stroke-width":1}));
-    tx(("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2),{x:x+4,y:m.t+11,"font-size":10,fill:"#6b757c"});
-  }
-  const ya=m.t+ih+18;
-  entries.filter(e=>e.drug).forEach(e=>{
-    const x=X(+e.dt),c=e.drug==="P"?"#2f6fd0":"#e08a1e";
-    svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:c,"stroke-width":.9,opacity:.22}));
-    svg.appendChild(el("path",{d:`M ${x-5} ${ya} L ${x+5} ${ya} L ${x} ${ya+8} Z`,fill:c}));
-    tx(e.drug,{x:x,y:ya+20,"text-anchor":"middle","font-size":10,fill:c,"font-weight":"700"});
-  });
-  svg.appendChild(el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
-    fill:"none",stroke:"#111","stroke-width":1.6,"stroke-linejoin":"round"}));
-  pts.forEach(p=>{
-    const c = p.drug==="P" ? "#2f6fd0" : (p.drug==="I" ? "#e08a1e" : "#111");
-    const r = p.drug ? 4.6 : 2.6;
-    svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?"#fff":c,
-      stroke:c,"stroke-width":p.drug?2.4:0}));
-    const hit=el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:11,fill:"transparent",class:"pt"});
-    hit.addEventListener("click",ev=>{ ev.stopPropagation(); showTip(hit,p); });
-    svg.appendChild(hit);
-  });
-  const L=pts[pts.length-1];
-  tx(L.temp.toFixed(1),{x:X(+L.dt)-6,y:Y(L.temp)-8,"text-anchor":"end","font-size":11,"font-weight":"700",fill:"#111"});
+function stampText(){
+  const t=T[L];
+  if(!entries.length){ $("stamp").textContent=t.none; $("ago").textContent=""; return; }
+  const last=entries[entries.length-1];
+  $("stamp").textContent=t.last+": "+last.dt.toLocaleString(t.loc,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const min=(Date.now()-last.dt)/60000;
+  const ago=$("ago");
+  if(min>480){ ago.className="ago stale"; ago.innerHTML="⚠ "+t.stale(min); }
+  else { ago.className="ago"; ago.innerHTML=t.ago(min); }
 }
 
 function showTip(node,p){
   const t=T[L], tip=$("tip"), wrap=$("chartWrap");
   const i=entries.indexOf(p);
-  const med = p.drug==="P" ? t.lp : (p.drug==="I" ? t.li : "");
-  const gap = p.drug ? gapFor(i) : "";
-  tip.innerHTML =
-    '<div class="d">'+p.dt.toLocaleString(t.loc,{weekday:"short",day:"2-digit",month:"2-digit"})+
-    " &middot; "+p.dt.toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"})+"</div>"+
-    "<b>"+p.temp.toFixed(1)+" °C</b>"+
-    (med?'<div style="margin-top:4px">'+med+"</div>":"")+
+  const med=p.drug==="P"?t.lp:(p.drug==="I"?t.li:"");
+  const gap=p.drug?gapFor(i):"";
+  tip.innerHTML='<div class="d">'+p.dt.toLocaleString(t.loc,{weekday:"short",day:"2-digit",month:"2-digit"})+
+    " &middot; "+p.dt.toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"})+"</div><b>"+
+    p.temp.toFixed(1)+" °C</b>"+(med?'<div style="margin-top:4px">'+med+"</div>":"")+
     (gap?'<div class="d">'+gap+"</div>":"");
   const a=node.getBoundingClientRect(), b=wrap.getBoundingClientRect();
   tip.style.display="block";
@@ -269,8 +286,68 @@ function showTip(node,p){
 }
 document.addEventListener("click",()=>{ const t=$("tip"); if(t) t.style.display="none"; });
 
-function render(){
-  $("tb").innerHTML=entries.map((e,i)=>({e,i})).reverse().map(({e,i})=>{
+function chart(){
+  const svg=$("chart"); svg.innerHTML="";
+  const data=inRange();
+  const pts=data.filter(e=>e.temp);
+  if(pts.length<2) return;
+  const cs=getComputedStyle(document.documentElement);
+  const C=n=>cs.getPropertyValue(n).trim();
+  const W=700,H=320,m={t:14,r:12,b:60,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
+  const X=t=>m.l+((t-t0)/((t1-t0)||1))*iw, Y=v=>m.t+(1-(v-35)/6)*ih;
+  const NS="http://www.w3.org/2000/svg";
+  const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
+  const tx=(s,a)=>{const e=el("text",a);e.textContent=s;svg.appendChild(e)};
+  svg.appendChild(el("rect",{x:m.l,y:Y(41),width:iw,height:Y(38)-Y(41),fill:C("--band")}));
+  for(let v=35;v<=41;v++){
+    svg.appendChild(el("line",{x1:m.l,y1:Y(v),x2:m.l+iw,y2:Y(v),
+      stroke:v===38?C("--grid2"):C("--grid"),"stroke-width":v===38?1.3:1,"stroke-dasharray":v===38?"5 3":""}));
+    tx(v,{x:m.l-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:C("--muted")});
+  }
+  svg.appendChild(el("line",{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:C("--ink"),"stroke-width":1.2}));
+  let d=new Date(t0); d.setHours(24,0,0,0);
+  for(;+d<t1;d.setDate(d.getDate()+1)){
+    const x=X(+d);
+    svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:C("--ink"),"stroke-width":1}));
+    tx(("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2),
+       {x:x+4,y:m.t+11,"font-size":10,fill:C("--muted")});
+  }
+  const ya=m.t+ih+18;
+  data.filter(e=>e.drug).forEach(e=>{
+    const x=X(+e.dt),c=e.drug==="P"?C("--para"):C("--ibu");
+    svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:c,"stroke-width":.9,opacity:.22}));
+    svg.appendChild(el("path",{d:`M ${x-5} ${ya} L ${x+5} ${ya} L ${x} ${ya+8} Z`,fill:c}));
+    tx(e.drug,{x:x,y:ya+20,"text-anchor":"middle","font-size":10,fill:c,"font-weight":"700"});
+  });
+  svg.appendChild(el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
+    fill:"none",stroke:C("--ink"),"stroke-width":1.6,"stroke-linejoin":"round"}));
+  pts.forEach(p=>{
+    const c=p.drug==="P"?C("--para"):(p.drug==="I"?C("--ibu"):C("--ink"));
+    const r=p.drug?4.6:2.6;
+    svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?C("--card"):c,
+      stroke:c,"stroke-width":p.drug?2.4:0}));
+    const hit=el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:11,fill:"transparent",class:"pt"});
+    hit.addEventListener("click",ev=>{ ev.stopPropagation(); showTip(hit,p); });
+    svg.appendChild(hit);
+  });
+  const Lp=pts[pts.length-1];
+  tx(Lp.temp.toFixed(1),{x:X(+Lp.dt)-6,y:Y(Lp.temp)-8,"text-anchor":"end","font-size":11,"font-weight":"700",fill:C("--ink")});
+}
+
+function table(){
+  const t=T[L];
+  const rows=inRange().map(e=>({e,i:entries.indexOf(e)}));
+  const key=SORT.k, dir=SORT.dir;
+  rows.sort((a,b)=>{
+    let va,vb;
+    if(key==="dt"||key==="time"){ va=+a.e.dt; vb=+b.e.dt; }
+    else if(key==="temp"){ va=a.e.temp??-1; vb=b.e.temp??-1; }
+    else if(key==="drug"){ va=a.e.drug||"zz"; vb=b.e.drug||"zz"; }
+    else { va=gapFor(a.i)||"zz"; vb=gapFor(b.i)||"zz"; }
+    return (va>vb?1:va<vb?-1:0)*dir;
+  });
+  $("tb").innerHTML=rows.map(({e,i})=>{
     const dd=("0"+e.dt.getDate()).slice(-2)+"/"+("0"+(e.dt.getMonth()+1)).slice(-2);
     const hh=("0"+e.dt.getHours()).slice(-2)+":"+("0"+e.dt.getMinutes()).slice(-2);
     const cls=e.temp>=39.5?"hi":(e.temp&&e.temp<37.5?"lo":"");
@@ -278,21 +355,68 @@ function render(){
       <td class="n ${cls}">${e.temp?e.temp.toFixed(1):""}</td>
       <td class="${e.drug}">${e.drug}</td><td class="n">${gapFor(i)}</td></tr>`;
   }).join("");
-  chart();
+  document.querySelectorAll("thead th").forEach(th=>{
+    const k=th.dataset.s, on=k===SORT.k;
+    th.classList.toggle("act",on);
+    th.querySelector(".ar").textContent = on ? (SORT.dir===1?"↑":"↓") : "↕";
+    th.firstChild.textContent=t.h[k];
+  });
 }
 
-$("refresh").onclick=async()=>{
+function applyLang(){
+  const t=T[L];
+  document.documentElement.lang=L;
+  $("t-title").textContent=t.title;
+  $("refresh").innerHTML="&#8635; "+t.refresh;
+  $("t-ro").textContent=t.ro;
+  $("t-tap").textContent=t.tap;
+  $("rall").textContent=t.all;
+  const lg=document.querySelectorAll(".legend span span");
+  [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
+  document.querySelectorAll(".tools button[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
+  render();
+}
+function render(){ stampText(); chart(); table(); }
+
+document.querySelectorAll(".tools button[data-l]").forEach(b=>b.onclick=()=>{
+  L=b.dataset.l; ST("lang",L); applyLang();
+});
+document.querySelectorAll(".range button").forEach(b=>b.onclick=()=>{
+  RANGE=parseInt(b.dataset.r,10); ST("range",RANGE);
+  document.querySelectorAll(".range button").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+document.querySelectorAll("thead th").forEach(th=>th.onclick=()=>{
+  const k=th.dataset.s;
+  if(SORT.k===k) SORT.dir*=-1; else { SORT.k=k; SORT.dir=(k==="dt"||k==="time")?-1:1; }
+  table();
+});
+$("refresh").onclick=async(ev)=>{
+  ev.stopPropagation();
   const b=$("refresh"); b.disabled=true; b.textContent="…";
   await load(true);
-  b.disabled=false; b.innerHTML="&#8635; Aggiorna";
+  b.disabled=false; b.innerHTML="&#8635; "+T[L].refresh;
 };
-document.querySelectorAll("#langs button").forEach(b=>b.onclick=()=>{
-  L=b.dataset.l; try{ localStorage.setItem("lang",L); }catch(e){}
-  applyLang();
-});
+
+// stato iniziale dei pulsanti periodo
+document.querySelectorAll(".range button").forEach(b=>b.classList.toggle("on",parseInt(b.dataset.r,10)===RANGE));
+
+// installabile: manifest generato al volo
+try{
+  const mf={name:"Diario febbre",short_name:"Febbre",start_url:location.href,display:"standalone",
+    background_color:"#fbfaf7",theme_color:"#15191c",
+    icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%2315191c'/%3E%3Cpath d='M80 340 L165 262 L222 364 L296 154 L364 296 L432 210' fill='none' stroke='%23fff' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+      sizes:"512x512",type:"image/svg+xml",purpose:"any"}]};
+  const link=document.createElement("link");
+  link.rel="manifest";
+  link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
+  document.head.appendChild(link);
+}catch(e){}
+
 applyLang();
 load();
-setInterval(()=>load(false),60000);
+setInterval(()=>{ load(false); },60000);
+setInterval(stampText,60000);
 </script>
 </body>
 </html>
