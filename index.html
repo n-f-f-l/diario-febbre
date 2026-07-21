@@ -36,6 +36,7 @@
   .P{color:var(--para);font-weight:700}.I{color:var(--ibu);font-weight:700}
   .hi{color:var(--hot);font-weight:700}.lo{color:#1e7a46;font-weight:600}
   #chartWrap{position:relative}
+  .tap{margin:0 2px 8px;font-size:11.5px;color:var(--muted)}
   #tip{position:absolute;display:none;z-index:5;background:var(--ink);color:#fff;
        border-radius:4px;padding:8px 10px;font-size:12px;line-height:1.45;
        box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap}
@@ -73,6 +74,7 @@
 
   <div class="card scroll" id="chartWrap">
     <div id="tip"></div>
+    <p class="tap" id="t-tap">Tocca un punto per vedere i dettagli</p>
     <svg id="chart" viewBox="0 0 700 320"></svg>
     <div class="legend">
       <span><i class="sw" style="background:var(--para)"></i>P &middot; paracetamolo</span>
@@ -99,22 +101,22 @@ const T={
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
      none:"nessun dato",cfg:"non configurato",
      h:["Data","Ora","Temp","Farm.","Dall'ultima dose"],
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",loc:"it-IT"},
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",tap:"Tocca un punto per vedere i dettagli",loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
      none:"no data",cfg:"not configured",
      h:["Date","Time","Temp","Med.","Since last dose"],
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",loc:"en-GB"},
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",tap:"Tap a point to see details",loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
      none:"aucune donnée",cfg:"non configuré",
      h:["Date","Heure","Temp","Méd.","Depuis la dernière dose"],
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",loc:"fr-FR"},
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",tap:"Touchez un point pour voir les détails",loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
      wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen, bitte erneut",
      none:"keine Daten",cfg:"nicht konfiguriert",
      h:["Datum","Uhrzeit","Temp","Med.","Seit letzter Dosis"],
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",loc:"de-DE"}
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",tap:"Tippen Sie auf einen Punkt für Details",loc:"de-DE"}
 };
 let L="it";
 try{ const sv=localStorage.getItem("lang"); if(sv&&T[sv]) L=sv; }catch(e){}
@@ -124,6 +126,7 @@ function applyLang(){
   document.documentElement.lang=L;
   $("t-title").textContent=t.title;
   $("refresh").innerHTML="&#8635; "+t.refresh;
+  $("t-tap").textContent=t.tap;
   document.querySelector(".tag").textContent=t.ro;
   const th=document.querySelectorAll("thead th");
   t.h.forEach((x,i)=>{ if(th[i]) th[i].textContent=x; });
