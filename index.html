@@ -301,7 +301,7 @@ function chart(animate){
        muted:"#6b757c",para:"#2f6fd0",ibu:"#c0398a",
        bandHi:"#faf0ee",bandMid:"#faf5e8",bandLo:"#eef6f0"};
   const C=n=>PAL[n.replace("--","")]||"#15191c";
-  const W=700,H=320,m={t:14,r:12,b:72,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const W=700,H=320,m={t:14,r:12,b:80,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
   const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
   const X=t=>m.l+((t-t0)/((t1-t0)||1))*iw, Y=v=>m.t+(1-(v-35)/6)*ih;
   const NS="http://www.w3.org/2000/svg";
@@ -325,7 +325,17 @@ function chart(animate){
     tx(("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2),
        {x:x+4,y:m.t+11,"font-size":10,fill:C("--muted")});
   }
-  const ya=m.t+ih+18;
+  const totH=(t1-t0)/3600000;
+  const step = totH<=13 ? 3 : (totH<=27 ? 3 : (totH<=51 ? 6 : 12));
+  let hd=new Date(t0); hd.setMinutes(0,0,0);
+  while(hd.getHours()%step!==0) hd.setHours(hd.getHours()+1);
+  for(;+hd<=t1;hd.setHours(hd.getHours()+step)){
+    const x=X(+hd);
+    if(x<m.l+2||x>m.l+iw-2) continue;
+    svg.appendChild(el("line",{x1:x,y1:m.t+ih,x2:x,y2:m.t+ih+4,stroke:C("--grid2"),"stroke-width":1}));
+    tx(("0"+hd.getHours()).slice(-2),{x:x,y:m.t+ih+13,"text-anchor":"middle","font-size":8.5,fill:C("--muted")});
+  }
+  const ya=m.t+ih+27;
   data.filter(e=>e.drug).forEach(e=>{
     const x=X(+e.dt),c=e.drug==="P"?C("--para"):C("--ibu");
     const hhmm=("0"+e.dt.getHours()).slice(-2)+":"+("0"+e.dt.getMinutes()).slice(-2);
