@@ -111,6 +111,10 @@
   </div>
 
   <div class="card">
+    <div class="legend" id="t-legend" style="margin:0 0 10px">
+      <span><i class="sw" style="background:var(--hot)"></i><span id="t-leg-hi">&ge; 39.5 &deg;C</span></span>
+      <span><i class="sw" style="background:var(--good)"></i><span id="t-leg-lo">&lt; 37.5 &deg;C</span></span>
+    </div>
     <div class="tbox">
       <table><thead><tr>
         <th data-s="dt" class="act">Data<span class="ar">↓</span></th>
@@ -134,28 +138,28 @@ const T={
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
      none:"nessun dato",cfg:"non configurato",tap:"Tocca un punto per vedere i dettagli",
      h:{dt:"Data",time:"Ora",temp:"Temp",drug:"Farm.",gap:"Dall'ultima dose"},
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",leghi:"febbre alta",leglo:"sfebbrata",
      ago:m=>"Rilevata "+hum(m,"it")+" fa",stale:m=>"Nessuna misurazione da "+hum(m,"it"),
      loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
      none:"no data",cfg:"not configured",tap:"Tap a point to see details",
      h:{dt:"Date",time:"Time",temp:"Temp",drug:"Med.",gap:"Since last dose"},
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",leghi:"high fever",leglo:"fever-free",
      ago:m=>"Taken "+hum(m,"en")+" ago",stale:m=>"No reading for "+hum(m,"en"),
      loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
      none:"aucune donnée",cfg:"non configuré",tap:"Touchez un point pour voir les détails",
      h:{dt:"Date",time:"Heure",temp:"Temp",drug:"Méd.",gap:"Depuis la dernière dose"},
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",leghi:"forte fièvre",leglo:"apyrexie",
      ago:m=>"Relevée il y a "+hum(m,"fr"),stale:m=>"Aucune mesure depuis "+hum(m,"fr"),
      loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
      wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen",
      none:"keine Daten",cfg:"nicht konfiguriert",tap:"Tippen Sie auf einen Punkt für Details",
      h:{dt:"Datum",time:"Uhrzeit",temp:"Temp",drug:"Med.",gap:"Seit letzter Dosis"},
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",leghi:"hohes Fieber",leglo:"fieberfrei",
      ago:m=>"Gemessen vor "+hum(m,"de"),stale:m=>"Keine Messung seit "+hum(m,"de"),
      loc:"de-DE"}
 };
@@ -391,8 +395,10 @@ function applyLang(){
   $("refresh").innerHTML="&#8635; "+t.refresh;
   $("t-tap").textContent=t.tap;
   $("rall").textContent=t.all;
-  const lg=document.querySelectorAll(".legend span span");
+  const lg=document.querySelectorAll("#chartWrap .legend span span");
   [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
+  $("t-leg-hi").textContent="\u2265 39.5 \u00b0C \u00b7 "+t.leghi;
+  $("t-leg-lo").textContent="< 37.5 \u00b0C \u00b7 "+t.leglo;
   document.querySelectorAll(".tools button[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
   render(false);
 }
