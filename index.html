@@ -134,28 +134,28 @@ const T={
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
      none:"nessun dato",cfg:"non configurato",tap:"Tocca un punto per vedere i dettagli",
      h:{dt:"Data",time:"Ora",temp:"Temp",drug:"Farm.",gap:"Dall'ultima dose"},
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",
      ago:m=>"Rilevata "+hum(m,"it")+" fa",stale:m=>"Nessuna misurazione da "+hum(m,"it"),
      loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
      none:"no data",cfg:"not configured",tap:"Tap a point to see details",
      h:{dt:"Date",time:"Time",temp:"Temp",drug:"Med.",gap:"Since last dose"},
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",
      ago:m=>"Taken "+hum(m,"en")+" ago",stale:m=>"No reading for "+hum(m,"en"),
      loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
      none:"aucune donnée",cfg:"non configuré",tap:"Touchez un point pour voir les détails",
      h:{dt:"Date",time:"Heure",temp:"Temp",drug:"Méd.",gap:"Depuis la dernière dose"},
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",
      ago:m=>"Relevée il y a "+hum(m,"fr"),stale:m=>"Aucune mesure depuis "+hum(m,"fr"),
      loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
      wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen",
      none:"keine Daten",cfg:"nicht konfiguriert",tap:"Tippen Sie auf einen Punkt für Details",
      h:{dt:"Datum",time:"Uhrzeit",temp:"Temp",drug:"Med.",gap:"Seit letzter Dosis"},
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",
      ago:m=>"Gemessen vor "+hum(m,"de"),stale:m=>"Keine Messung seit "+hum(m,"de"),
      loc:"de-DE"}
 };
@@ -250,11 +250,19 @@ function inRange(){
   return entries.filter(e=>+e.dt>=lim);
 }
 
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function stampText(){
   const t=T[L];
   if(!entries.length){ $("stamp").textContent=t.none; return; }
   const last=entries[entries.length-1];
-  $("stamp").textContent=t.last+": "+last.dt.toLocaleString(t.loc,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const now=new Date();
+  const yest=new Date(now); yest.setDate(now.getDate()-1);
+  const time=last.dt.toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"});
+  let day;
+  if(sameDay(last.dt,now)) day=t.today;
+  else if(sameDay(last.dt,yest)) day=t.yest;
+  else day=last.dt.toLocaleDateString(t.loc,{day:"2-digit",month:"2-digit"});
+  $("stamp").textContent=t.last+": "+day+", "+time;
 }
 
 function showTip(node,p){
@@ -287,7 +295,7 @@ function chart(animate){
     : {ink:"#15191c",card:"#ffffff",band:"#eef1f3",grid:"#e6eaec",grid2:"#9aa4ab",
        muted:"#6b757c",para:"#2f6fd0",ibu:"#e08a1e"};
   const C=n=>PAL[n.replace("--","")]||"#15191c";
-  const W=700,H=320,m={t:14,r:12,b:60,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const W=700,H=320,m={t:14,r:12,b:72,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
   const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
   const X=t=>m.l+((t-t0)/((t1-t0)||1))*iw, Y=v=>m.t+(1-(v-35)/6)*ih;
   const NS="http://www.w3.org/2000/svg";
@@ -310,9 +318,11 @@ function chart(animate){
   const ya=m.t+ih+18;
   data.filter(e=>e.drug).forEach(e=>{
     const x=X(+e.dt),c=e.drug==="P"?C("--para"):C("--ibu");
+    const hhmm=("0"+e.dt.getHours()).slice(-2)+":"+("0"+e.dt.getMinutes()).slice(-2);
     svg.appendChild(el("line",{x1:x,y1:m.t,x2:x,y2:m.t+ih,stroke:c,"stroke-width":.9,opacity:.22}));
     svg.appendChild(el("path",{d:`M ${x-5} ${ya} L ${x+5} ${ya} L ${x} ${ya+8} Z`,fill:c}));
     tx(e.drug,{x:x,y:ya+20,"text-anchor":"middle","font-size":10,fill:c,"font-weight":"700"});
+    tx(hhmm,{x:x,y:ya+32,"text-anchor":"middle","font-size":8.5,fill:c,opacity:.85});
   });
   const linePath=el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
     fill:"none",stroke:C("--ink"),"stroke-width":1.6,"stroke-linejoin":"round"});
