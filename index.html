@@ -106,7 +106,6 @@
     <div class="legend">
       <span><i class="sw" style="background:var(--para)"></i><span>P &middot; paracetamolo</span></span>
       <span><i class="sw" style="background:var(--ibu)"></i><span>I &middot; ibuprofene 2%</span></span>
-      <span><i class="sw band"></i><span>zona &ge; 38 &deg;C</span></span>
     </div>
   </div>
 
@@ -296,9 +295,11 @@ function chart(animate){
   const dark=document.documentElement.dataset.theme==="dark";
   const PAL=dark
     ? {ink:"#e8ecef",card:"#1a1f24",band:"#212a31",grid:"#2b343b",grid2:"#5a666f",
-       muted:"#94a1aa",para:"#6fa8ff",ibu:"#e07ab8"}
+       muted:"#94a1aa",para:"#6fa8ff",ibu:"#e07ab8",
+       bandHi:"#3a2126",bandMid:"#2e2a1c",bandLo:"#1c2b22"}
     : {ink:"#15191c",card:"#ffffff",band:"#eef1f3",grid:"#e6eaec",grid2:"#9aa4ab",
-       muted:"#6b757c",para:"#2f6fd0",ibu:"#c0398a"};
+       muted:"#6b757c",para:"#2f6fd0",ibu:"#c0398a",
+       bandHi:"#faf0ee",bandMid:"#faf5e8",bandLo:"#eef6f0"};
   const C=n=>PAL[n.replace("--","")]||"#15191c";
   const W=700,H=320,m={t:14,r:12,b:72,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
   const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
@@ -306,12 +307,16 @@ function chart(animate){
   const NS="http://www.w3.org/2000/svg";
   const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
   const tx=(s,a)=>{const e=el("text",a);e.textContent=s;svg.appendChild(e)};
-  svg.appendChild(el("rect",{x:m.l,y:Y(41),width:iw,height:Y(38)-Y(41),fill:C("--band")}));
+  svg.appendChild(el("rect",{x:m.l,y:Y(41),width:iw,height:Y(39.5)-Y(41),fill:C("--bandHi")}));
+  svg.appendChild(el("rect",{x:m.l,y:Y(39.5),width:iw,height:Y(37.5)-Y(39.5),fill:C("--bandMid")}));
+  svg.appendChild(el("rect",{x:m.l,y:Y(37.5),width:iw,height:Y(35)-Y(37.5),fill:C("--bandLo")}));
   for(let v=35;v<=41;v++){
-    svg.appendChild(el("line",{x1:m.l,y1:Y(v),x2:m.l+iw,y2:Y(v),
-      stroke:v===38?C("--grid2"):C("--grid"),"stroke-width":v===38?1.3:1,"stroke-dasharray":v===38?"5 3":""}));
+    svg.appendChild(el("line",{x1:m.l,y1:Y(v),x2:m.l+iw,y2:Y(v),stroke:C("--grid"),"stroke-width":1}));
     tx(v,{x:m.l-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:C("--muted")});
   }
+  [37.5,39.5].forEach(v=>{
+    svg.appendChild(el("line",{x1:m.l,y1:Y(v),x2:m.l+iw,y2:Y(v),stroke:C("--grid2"),"stroke-width":1,"stroke-dasharray":"5 3"}));
+  });
   svg.appendChild(el("line",{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:C("--ink"),"stroke-width":1.2}));
   let d=new Date(t0); d.setHours(24,0,0,0);
   for(;+d<t1;d.setDate(d.getDate()+1)){
@@ -397,7 +402,7 @@ function applyLang(){
   $("t-tap").textContent=t.tap;
   $("rall").textContent=t.all;
   const lg=document.querySelectorAll("#chartWrap .legend span span");
-  [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
+  [t.lp,t.li].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
   $("t-leg-hi").textContent="\u2265 39.5 \u00b0C \u00b7 "+t.leghi;
   $("t-leg-mid").textContent="37.5\u201339.4 \u00b0C \u00b7 "+t.legmid;
   $("t-leg-lo").textContent="< 37.5 \u00b0C \u00b7 "+t.leglo;
