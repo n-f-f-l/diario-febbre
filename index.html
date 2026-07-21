@@ -188,7 +188,11 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ if(TH
 $("theme").onclick=()=>{
   THEME = THEME==="auto" ? "light" : (THEME==="light" ? "dark" : "auto");
   ST("theme",THEME); setTheme(THEME);
+  if(typeof render==="function") render();
 };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{
+  if(THEME==="auto" && typeof render==="function") render();
+});
 
 // dati
 function parseCSV(txt){
