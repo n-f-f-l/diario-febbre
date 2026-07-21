@@ -176,23 +176,18 @@ let entries=[];
 
 // tema
 function setTheme(mode){
-  document.documentElement.dataset.theme = mode==="auto"
-    ? (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light") : mode;
+  document.documentElement.dataset.theme = mode;
   document.querySelector('meta[name=theme-color]').content =
-    document.documentElement.dataset.theme==="dark" ? "#12161a" : "#fbfaf7";
-  $("theme").textContent = mode==="auto" ? "◐" : (mode==="dark" ? "☾" : "☀");
+    mode==="dark" ? "#12161a" : "#fbfaf7";
+  $("theme").textContent = mode==="dark" ? "☾" : "☀";
 }
-let THEME=ST("theme")||"auto";
+let THEME = ST("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 setTheme(THEME);
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ if(THEME==="auto") setTheme("auto"); });
 $("theme").onclick=()=>{
-  THEME = THEME==="auto" ? "light" : (THEME==="light" ? "dark" : "auto");
+  THEME = THEME==="dark" ? "light" : "dark";
   ST("theme",THEME); setTheme(THEME);
-  if(typeof render==="function") render();
+  if(typeof render==="function") render(false);
 };
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{
-  if(THEME==="auto" && typeof render==="function") render();
-});
 
 // dati
 function parseCSV(txt){
@@ -280,7 +275,7 @@ function showTip(node,p){
 }
 document.addEventListener("click",()=>{ const t=$("tip"); if(t) t.style.display="none"; });
 
-function chart(){
+function chart(animate){
   const svg=$("chart"); svg.innerHTML="";
   const data=inRange();
   const pts=data.filter(e=>e.temp);
@@ -319,13 +314,30 @@ function chart(){
     svg.appendChild(el("path",{d:`M ${x-5} ${ya} L ${x+5} ${ya} L ${x} ${ya+8} Z`,fill:c}));
     tx(e.drug,{x:x,y:ya+20,"text-anchor":"middle","font-size":10,fill:c,"font-weight":"700"});
   });
-  svg.appendChild(el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
-    fill:"none",stroke:C("--ink"),"stroke-width":1.6,"stroke-linejoin":"round"}));
-  pts.forEach(p=>{
+  const linePath=el("path",{d:pts.map((p,i)=>(i?"L":"M")+X(+p.dt).toFixed(1)+" "+Y(p.temp).toFixed(1)).join(" "),
+    fill:"none",stroke:C("--ink"),"stroke-width":1.6,"stroke-linejoin":"round"});
+  svg.appendChild(linePath);
+  const DUR=650;
+  if(animate){
+    const len=linePath.getTotalLength();
+    linePath.style.strokeDasharray=len;
+    linePath.style.strokeDashoffset=len;
+    linePath.getBoundingClientRect();
+    linePath.style.transition="stroke-dashoffset "+DUR+"ms cubic-bezier(.4,0,.2,1)";
+    requestAnimationFrame(()=>{ linePath.style.strokeDashoffset="0"; });
+  }
+  pts.forEach((p,idx)=>{
     const c=p.drug==="P"?C("--para"):(p.drug==="I"?C("--ibu"):C("--ink"));
     const r=p.drug?4.6:2.6;
-    svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?C("--card"):c,
-      stroke:c,"stroke-width":p.drug?2.4:0}));
+    const dot=el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?C("--card"):c,
+      stroke:c,"stroke-width":p.drug?2.4:0});
+    if(animate){
+      dot.style.opacity="0";
+      const delay=(idx/(pts.length-1||1))*DUR*0.85;
+      dot.style.transition="opacity 260ms ease "+delay+"ms";
+      requestAnimationFrame(()=>{ dot.style.opacity="1"; });
+    }
+    svg.appendChild(dot);
     const hit=el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:11,fill:"transparent",class:"pt"});
     hit.addEventListener("click",ev=>{ ev.stopPropagation(); showTip(hit,p); });
     svg.appendChild(hit);
@@ -372,9 +384,9 @@ function applyLang(){
   const lg=document.querySelectorAll(".legend span span");
   [t.lp,t.li,t.lb].forEach((x,i)=>{ if(lg[i]) lg[i].textContent=x; });
   document.querySelectorAll(".tools button[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
-  render();
+  render(false);
 }
-function render(){ stampText(); chart(); table(); }
+function render(animate){ stampText(); chart(animate!==false); table(); }
 
 document.querySelectorAll(".tools button[data-l]").forEach(b=>b.onclick=()=>{
   L=b.dataset.l; ST("lang",L); applyLang();
@@ -382,7 +394,7 @@ document.querySelectorAll(".tools button[data-l]").forEach(b=>b.onclick=()=>{
 document.querySelectorAll(".range button").forEach(b=>b.onclick=()=>{
   RANGE=parseInt(b.dataset.r,10); ST("range",RANGE);
   document.querySelectorAll(".range button").forEach(x=>x.classList.toggle("on",x===b));
-  render();
+  render(true);
 });
 document.querySelectorAll("thead th").forEach(th=>th.onclick=()=>{
   const k=th.dataset.s;
