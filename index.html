@@ -35,6 +35,13 @@
   td.n{font-variant-numeric:tabular-nums}
   .P{color:var(--para);font-weight:700}.I{color:var(--ibu);font-weight:700}
   .hi{color:var(--hot);font-weight:700}.lo{color:#1e7a46;font-weight:600}
+  #chartWrap{position:relative}
+  #tip{position:absolute;display:none;z-index:5;background:var(--ink);color:#fff;
+       border-radius:4px;padding:8px 10px;font-size:12px;line-height:1.45;
+       box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;white-space:nowrap}
+  #tip b{font-size:14px}
+  #tip .d{opacity:.75}
+  #chart circle.pt{cursor:pointer}
   .legend{display:flex;flex-wrap:wrap;gap:16px;margin:10px 4px 2px;font-size:12px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .sw{width:11px;height:11px;border-radius:2px;display:inline-block}
@@ -64,7 +71,8 @@
     <p class="hint">Quello è il link da condividere: chi lo apre vede i dati aggiornati, senza account.</p>
   </div>
 
-  <div class="card scroll">
+  <div class="card scroll" id="chartWrap">
+    <div id="tip"></div>
     <svg id="chart" viewBox="0 0 700 320"></svg>
     <div class="legend">
       <span><i class="sw" style="background:var(--para)"></i>P &middot; paracetamolo</span>
@@ -230,10 +238,33 @@ function chart(){
     const r = p.drug ? 4.6 : 2.6;
     svg.appendChild(el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:r,fill:p.drug?"#fff":c,
       stroke:c,"stroke-width":p.drug?2.4:0}));
+    const hit=el("circle",{cx:X(+p.dt),cy:Y(p.temp),r:11,fill:"transparent",class:"pt"});
+    hit.addEventListener("click",ev=>{ ev.stopPropagation(); showTip(hit,p); });
+    svg.appendChild(hit);
   });
   const L=pts[pts.length-1];
   tx(L.temp.toFixed(1),{x:X(+L.dt)-6,y:Y(L.temp)-8,"text-anchor":"end","font-size":11,"font-weight":"700",fill:"#111"});
 }
+
+function showTip(node,p){
+  const t=T[L], tip=$("tip"), wrap=$("chartWrap");
+  const i=entries.indexOf(p);
+  const med = p.drug==="P" ? t.lp : (p.drug==="I" ? t.li : "");
+  const gap = p.drug ? gapFor(i) : "";
+  tip.innerHTML =
+    '<div class="d">'+p.dt.toLocaleString(t.loc,{weekday:"short",day:"2-digit",month:"2-digit"})+
+    " &middot; "+p.dt.toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"})+"</div>"+
+    "<b>"+p.temp.toFixed(1)+" °C</b>"+
+    (med?'<div style="margin-top:4px">'+med+"</div>":"")+
+    (gap?'<div class="d">'+gap+"</div>":"");
+  const a=node.getBoundingClientRect(), b=wrap.getBoundingClientRect();
+  tip.style.display="block";
+  let left=a.left-b.left+a.width/2-tip.offsetWidth/2;
+  left=Math.max(4,Math.min(left,wrap.clientWidth-tip.offsetWidth-4));
+  tip.style.left=left+"px";
+  tip.style.top=Math.max(2,a.top-b.top-tip.offsetHeight-8)+"px";
+}
+document.addEventListener("click",()=>{ const t=$("tip"); if(t) t.style.display="none"; });
 
 function render(){
   $("tb").innerHTML=entries.map((e,i)=>({e,i})).reverse().map(({e,i})=>{
