@@ -326,7 +326,7 @@ function chart(animate){
        {x:x+4,y:m.t+11,"font-size":10,fill:C("--muted")});
   }
   const totH=(t1-t0)/3600000;
-  const step = totH<=13 ? 3 : (totH<=27 ? 3 : (totH<=51 ? 6 : 12));
+  const step = totH<=51 ? 3 : 6;
   let hd=new Date(t0); hd.setMinutes(0,0,0);
   while(hd.getHours()%step!==0) hd.setHours(hd.getHours()+1);
   for(;+hd<=t1;hd.setHours(hd.getHours()+step)){
