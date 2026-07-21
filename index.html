@@ -14,12 +14,12 @@
 <style>
   :root{
     --ink:#15191c; --paper:#fbfaf7; --card:#ffffff; --line:#d7dbde; --muted:#6b757c;
-    --para:#2f6fd0; --ibu:#8a5fc9; --hot:#b03a2e; --good:#1e7a46; --warn:#c98a1a;
+    --para:#2f6fd0; --ibu:#c0398a; --hot:#b03a2e; --good:#1e7a46; --warn:#c98a1a;
     --band:#eef1f3; --grid:#e6eaec; --grid2:#9aa4ab;
   }
   html[data-theme="dark"]{
     --ink:#e8ecef; --paper:#12161a; --card:#1a1f24; --line:#2c343b; --muted:#94a1aa;
-    --para:#6fa8ff; --ibu:#b48ee0; --hot:#ff8a7a; --good:#5fcf94; --warn:#e0ab52;
+    --para:#6fa8ff; --ibu:#e07ab8; --hot:#ff8a7a; --good:#5fcf94; --warn:#e0ab52;
     --band:#212a31; --grid:#252d34; --grid2:#4a565f;
   }
   *{box-sizing:border-box}
@@ -296,9 +296,9 @@ function chart(animate){
   const dark=document.documentElement.dataset.theme==="dark";
   const PAL=dark
     ? {ink:"#e8ecef",card:"#1a1f24",band:"#212a31",grid:"#2b343b",grid2:"#5a666f",
-       muted:"#94a1aa",para:"#6fa8ff",ibu:"#b48ee0"}
+       muted:"#94a1aa",para:"#6fa8ff",ibu:"#e07ab8"}
     : {ink:"#15191c",card:"#ffffff",band:"#eef1f3",grid:"#e6eaec",grid2:"#9aa4ab",
-       muted:"#6b757c",para:"#2f6fd0",ibu:"#8a5fc9"};
+       muted:"#6b757c",para:"#2f6fd0",ibu:"#c0398a"};
   const C=n=>PAL[n.replace("--","")]||"#15191c";
   const W=700,H=320,m={t:14,r:12,b:72,l:34},iw=W-m.l-m.r,ih=H-m.t-m.b;
   const t0=+pts[0].dt,t1=+pts[pts.length-1].dt;
