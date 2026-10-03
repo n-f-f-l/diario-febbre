@@ -256,10 +256,16 @@ async function load(manual){
 }
 
 const gapTxt=d=>{const m=Math.round(d/60000);return Math.floor(m/60)+"h"+String(m%60).padStart(2,"0")};
+function episodeOf(e){
+  if(!EPISODES.length) return entries;
+  return EPISODES.find(ep=>ep.includes(e)) || entries;
+}
 function gapFor(i){
   const e=entries[i]; if(!e||!e.drug) return "";
+  const ep=episodeOf(e);
+  const j0=ep.indexOf(e);
   const prev={};
-  for(let j=i-1;j>=0;j--){const p=entries[j];
+  for(let j=j0-1;j>=0;j--){const p=ep[j];
     if(p.drug&&!prev[p.drug]) prev[p.drug]=e.dt-p.dt;
     if(prev.P&&prev.I) break;}
   return Object.entries(prev).map(([k,v])=>[v,gapTxt(v)+" ("+k+")"])
