@@ -46,6 +46,19 @@
   .barr{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 8px;flex-wrap:wrap}
   .tap{margin:0;font-size:11.5px;color:var(--muted)}
   .range{display:flex;gap:4px}
+  .epdet{position:relative;margin-right:2px}
+  .epdet summary{font-size:11px;padding:4px 9px;background:var(--card);color:var(--ink);
+         border:1px solid var(--line);border-radius:3px;font-weight:600;cursor:pointer;
+         list-style:none;user-select:none;white-space:nowrap}
+  .epdet summary::-webkit-details-marker{display:none}
+  .epdet[open] summary{border-color:var(--grid2)}
+  .eplist{position:absolute;top:calc(100% + 4px);left:0;z-index:6;background:var(--card);
+          border:1px solid var(--line);border-radius:6px;padding:6px;min-width:168px;
+          box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .eplist label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink);
+                padding:5px 4px;border-radius:4px;cursor:pointer;white-space:nowrap}
+  .eplist label:hover{background:var(--band)}
+  .eplist input{width:14px;height:14px;margin:0;accent-color:var(--ink)}
   .range button{font-size:11px;padding:4px 8px;background:none;color:var(--muted);
                 border:1px solid var(--line);border-radius:3px;cursor:pointer;font-weight:600}
   .range button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -99,6 +112,10 @@
     <div class="barr">
       <p class="tap" id="t-tap">Tocca un punto per vedere i dettagli</p>
       <div class="range">
+        <details class="epdet" id="episodePicker">
+          <summary id="episodeSummary">episodi</summary>
+          <div class="eplist" id="episodeList"></div>
+        </details>
         <button data-r="12">12h</button><button data-r="24">24h</button><button data-r="48">48h</button><button data-r="0" id="rall" class="on">tutto</button>
       </div>
     </div>
@@ -138,28 +155,28 @@ const T={
      wait:"controllo in corso…",ok:"aggiornato alle ",ko:"aggiornamento non riuscito, riprova",
      none:"nessun dato",cfg:"non configurato",tap:"Tocca un punto per vedere i dettagli",
      h:{dt:"Data",time:"Ora",temp:"Temp",drug:"Farm.",gap:"Dall'ultima dose"},
-     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",leghi:"febbre alta",legmid:"febbre",leglo:"sfebbrata",
+     lp:"P · paracetamolo",li:"I · ibuprofene 2%",lb:"zona ≥ 38 °C",all:"tutto",today:"oggi",yest:"ieri",current:"attuale",episodes:"episodi",leghi:"febbre alta",legmid:"febbre",leglo:"sfebbrata",
      ago:m=>"Rilevata "+hum(m,"it")+" fa",stale:m=>"Nessuna misurazione da "+hum(m,"it"),
      loc:"it-IT"},
  en:{title:"Fever log",last:"Last reading",refresh:"Refresh",ro:"read only",
      wait:"checking…",ok:"updated at ",ko:"update failed, try again",
      none:"no data",cfg:"not configured",tap:"Tap a point to see details",
      h:{dt:"Date",time:"Time",temp:"Temp",drug:"Med.",gap:"Since last dose"},
-     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",leghi:"high fever",legmid:"fever",leglo:"fever-free",
+     lp:"P · paracetamol",li:"I · ibuprofen 2%",lb:"≥ 38 °C zone",all:"all",today:"today",yest:"yesterday",current:"current",episodes:"episodes",leghi:"high fever",legmid:"fever",leglo:"fever-free",
      ago:m=>"Taken "+hum(m,"en")+" ago",stale:m=>"No reading for "+hum(m,"en"),
      loc:"en-GB"},
  fr:{title:"Courbe de température",last:"Dernière mesure",refresh:"Actualiser",ro:"lecture seule",
      wait:"vérification…",ok:"actualisé à ",ko:"échec de l'actualisation, réessayez",
      none:"aucune donnée",cfg:"non configuré",tap:"Touchez un point pour voir les détails",
      h:{dt:"Date",time:"Heure",temp:"Temp",drug:"Méd.",gap:"Depuis la dernière dose"},
-     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",leghi:"forte fièvre",legmid:"fièvre",leglo:"apyrexie",
+     lp:"P · paracétamol",li:"I · ibuprofène 2%",lb:"zone ≥ 38 °C",all:"tout",today:"aujourd’hui",yest:"hier",current:"actuel",episodes:"épisodes",leghi:"forte fièvre",legmid:"fièvre",leglo:"apyrexie",
      ago:m=>"Relevée il y a "+hum(m,"fr"),stale:m=>"Aucune mesure depuis "+hum(m,"fr"),
      loc:"fr-FR"},
  de:{title:"Fieberkurve",last:"Letzte Messung",refresh:"Aktualisieren",ro:"nur Lesen",
      wait:"wird geprüft…",ok:"aktualisiert um ",ko:"Aktualisierung fehlgeschlagen",
      none:"keine Daten",cfg:"nicht konfiguriert",tap:"Tippen Sie auf einen Punkt für Details",
      h:{dt:"Datum",time:"Uhrzeit",temp:"Temp",drug:"Med.",gap:"Seit letzter Dosis"},
-     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",leghi:"hohes Fieber",legmid:"Fieber",leglo:"fieberfrei",
+     lp:"P · Paracetamol",li:"I · Ibuprofen 2%",lb:"Bereich ≥ 38 °C",all:"alles",today:"heute",yest:"gestern",current:"aktuell",episodes:"Episoden",leghi:"hohes Fieber",legmid:"Fieber",leglo:"fieberfrei",
      ago:m=>"Gemessen vor "+hum(m,"de"),stale:m=>"Keine Messung seit "+hum(m,"de"),
      loc:"de-DE"}
 };
@@ -231,7 +248,8 @@ async function load(manual){
       let drug=(c[3]||"").trim().toUpperCase(); if(drug==="N") drug="I";
       return {dt,temp:isNaN(temp)?null:temp,drug:(drug==="P"||drug==="I")?drug:""};
     }).filter(Boolean).sort((a,b)=>a.dt-b.dt);
-    render();
+    buildEpisodes();
+    render(true);
     const t=T[L], ora=new Date().toLocaleTimeString(t.loc,{hour:"2-digit",minute:"2-digit"});
     setStatus(t.ok+ora,"ok");
   }catch(e){ setStatus(T[L].ko,"ko"); }
@@ -248,10 +266,78 @@ function gapFor(i){
     .sort((a,b)=>a[0]-b[0]).map(x=>x[1]).join(" / ")||"/";
 }
 
+const GAP_H = 36; // ore di silenzio che separano due episodi distinti
+let EPISODES = [];
+let SEL_EPS = null; // Set di indici selezionati, null = non ancora calcolato
+
+function buildEpisodes(){
+  EPISODES = [];
+  let cur = [];
+  entries.forEach((e,i)=>{
+    if(i>0 && (+e.dt - +entries[i-1].dt) > GAP_H*3600e3){
+      EPISODES.push(cur); cur=[];
+    }
+    cur.push(e);
+  });
+  if(cur.length) EPISODES.push(cur);
+  if(SEL_EPS===null || [...SEL_EPS].some(i=>i>=EPISODES.length)){
+    SEL_EPS = new Set([EPISODES.length-1]);
+  }
+  fillEpisodePanel();
+}
+
+function episodeLabel(ep,isLast){
+  const t=T[L];
+  const a=ep[0].dt, b=ep[ep.length-1].dt;
+  const fmt=d=>d.toLocaleDateString(t.loc,{day:"2-digit",month:"2-digit"});
+  const base = fmt(a)===fmt(b) ? fmt(a) : fmt(a)+" – "+fmt(b);
+  return base + (isLast ? " · "+t.current : "");
+}
+
+function updateEpisodeSummary(){
+  const sum=$("episodeSummary");
+  if(SEL_EPS.size===1){
+    const i=[...SEL_EPS][0];
+    sum.textContent = episodeLabel(EPISODES[i], i===EPISODES.length-1);
+  } else {
+    sum.textContent = SEL_EPS.size+" "+T[L].episodes;
+  }
+}
+
+function fillEpisodePanel(){
+  const det=$("episodePicker"), list=$("episodeList");
+  if(EPISODES.length<=1){ det.style.display="none"; return; }
+  det.style.display="";
+  list.innerHTML = EPISODES.map((ep,i)=>{
+    const checked = SEL_EPS.has(i) ? "checked" : "";
+    return `<label><input type="checkbox" data-ep="${i}" ${checked}>${episodeLabel(ep,i===EPISODES.length-1)}</label>`;
+  }).join("");
+  list.querySelectorAll("input[type=checkbox]").forEach(cb=>{
+    cb.onchange=()=>{
+      const i=parseInt(cb.dataset.ep,10);
+      if(cb.checked) SEL_EPS.add(i);
+      else if(SEL_EPS.size>1) SEL_EPS.delete(i);
+      else cb.checked=true; // almeno un episodio resta sempre selezionato
+      updateEpisodeSummary();
+      RANGE=0; ST("range",0);
+      document.querySelectorAll(".range button").forEach(x=>x.classList.toggle("on",x.id==="rall"));
+      render(true);
+    };
+  });
+  updateEpisodeSummary();
+}
+
 function inRange(){
-  if(!RANGE) return entries;
+  let base = entries;
+  if(EPISODES.length){
+    base = entries.filter((e,gi)=>{
+      const epIdx = EPISODES.findIndex(ep=>ep.includes(e));
+      return SEL_EPS.has(epIdx);
+    });
+  }
+  if(!RANGE) return base;
   const lim=Date.now()-RANGE*3600e3;
-  return entries.filter(e=>+e.dt>=lim);
+  return base.filter(e=>+e.dt>=lim);
 }
 
 function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
@@ -417,12 +503,17 @@ function applyLang(){
   $("t-leg-mid").textContent="37.5\u201339.4 \u00b0C \u00b7 "+t.legmid;
   $("t-leg-lo").textContent="< 37.5 \u00b0C \u00b7 "+t.leglo;
   document.querySelectorAll(".tools button[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l===L));
+  if(EPISODES.length) fillEpisodePanel();
   render(false);
 }
 function render(animate){ stampText(); chart(animate!==false); table(); }
 
 document.querySelectorAll(".tools button[data-l]").forEach(b=>b.onclick=()=>{
   L=b.dataset.l; ST("lang",L); applyLang();
+});
+document.addEventListener("click",(ev)=>{
+  const det=$("episodePicker");
+  if(det && det.open && !det.contains(ev.target)) det.open=false;
 });
 document.querySelectorAll(".range button").forEach(b=>b.onclick=()=>{
   RANGE=parseInt(b.dataset.r,10); ST("range",RANGE);
